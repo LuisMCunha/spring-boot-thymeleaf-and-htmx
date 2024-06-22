@@ -1,6 +1,6 @@
 package com.example.htmx;
 
-import io.github.wimdeblauwe.hsbt.mvc.HtmxResponse;
+import io.github.wimdeblauwe.htmx.spring.boot.mvc.HtmxResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -40,8 +40,9 @@ class Initializer {
     @EventListener({ApplicationReadyEvent.class, TodosResetEvent.class})
     void reset() {
         this.repository.deleteAll();
-        Stream.of("write a new blog,record a video on HTMX,record a new podcast episode".split(","))
-                .forEach(t -> this.repository.save(new Todo(null, t)));
+        Stream.of(("write a new blog,record a video on HTMX, record a new podcast episode")
+                .split(","))
+            .forEach(t -> this.repository.save(new Todo(null, t)));
     }
 }
 
@@ -70,17 +71,18 @@ class TodosController {
     String reset(Model model) {
         this.publisher.publishEvent(new TodosResetEvent());
         model.addAttribute("todos", this.repository.findAll());
-        return "todos :: todos";
+        return "todos :: todos-list";
     }
 
     @PostMapping
     HtmxResponse add(@RequestParam("new-todo") String newTodo, Model model) {
         log.debug("going to add another todo : " + newTodo);
-        this.repository.save(new Todo(null, newTodo));
-        model.addAttribute("todos", this.repository.findAll());
-        return new HtmxResponse()
-                .addTemplate("todos :: todos")
-                .addTemplate("todos :: todos-form");
+        Todo todo = this.repository.save(new Todo(null, newTodo));
+        model.addAttribute("todo", todo);
+        return HtmxResponse.builder()
+            .view("todo-item")
+            .view("todos :: todos-form")
+            .build();
     }
 
     @ResponseBody

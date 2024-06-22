@@ -1,0 +1,13 @@
+<div th:fragment="todo-item"
+		 class="todo line">
+	<div th:text="${todo.id}" class="id">243</div>
+	<div class="title" th:text="${todo.title}">title</div>
+	<div class="buttons">
+		<button hx-confirm="Are you sure?"
+						hx-target="closest .todo"
+						hx-swap="outerHTML"
+						th:hx-delete="${'/todos/' + todo.id}">
+			Delete
+		</button>
+	</div>
+</div>
